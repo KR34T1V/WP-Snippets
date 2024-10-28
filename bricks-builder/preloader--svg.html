@@ -1,3 +1,30 @@
+<!--
+    SVG Preloader Implementation Guide
+    ================================
+    
+    This component provides a customizable SVG-based loading animation that displays while your page loads.
+    The loader features a compass-like design that can be easily modified.
+    
+    How to use:
+    1. Copy the entire HTML, CSS and JavaScript code to your project
+    2. The preloader will automatically show on page load and hide when loading completes
+    3. Customize the appearance by modifying the CSS variables in :root
+    
+    Customization:
+    - Modify CSS variables in :root to customize appearance:
+      --preloader-bg: Background color of overlay
+      --preloader-fade-duration: Fade out animation duration
+      --preloader-z-index: Stack order of the preloader
+      --preloader-width: Width of preloader overlay
+      --preloader-height: Height of preloader overlay
+    
+    SVG Customization:
+    - The SVG loader uses a path element to draw the compass design
+    - Modify the path "d" attribute to change the shape
+    - Adjust stroke color and width to change the line appearance
+    - Change width/height of .nabb-loader class to resize
+-->
+
 <!DOCTYPE html>
 <html>
     <!-- Main preloader container -->
@@ -12,19 +39,28 @@
 </html>
 
 <style>
+    /* CSS Variables */
+    :root {
+        --preloader-bg: #000;
+        --preloader-fade-duration: 0.5s;
+        --preloader-z-index: 9999;
+        --preloader-width: 100%;
+        --preloader-height: 100%;
+    }
+
     /* Preloader container styles */
     .nabb-preloader {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
+        width: var(--preloader-width);
+        height: var(--preloader-height);
+        background: var(--preloader-bg);
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 9999;
-        transition: opacity 0.5s ease-out;
+        z-index: var(--preloader-z-index);
+        transition: opacity var(--preloader-fade-duration) ease-out;
     }
 
     /* Hidden state for fade-out effect */
@@ -54,7 +90,6 @@
         }
         100% {
             stroke-dashoffset: 0;   /* Reveal the entire path */
-            /* fill: #FFF; */       /* Commented out fill animation */
         }
     }
 </style>

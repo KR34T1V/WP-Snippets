@@ -1,5 +1,27 @@
+<!--
+    Simple Preloader Implementation Guide
+    ===================================
+    
+    This component provides a minimal spinning loader animation that displays while your page loads.
+    
+    How to use:
+    1. Copy the entire HTML, CSS and JavaScript to your project
+    2. The preloader will automatically show on page load and hide when loading completes
+    3. Customize colors and timing by modifying the CSS variables
+    
+    Customization:
+    - Modify CSS variables in :root to customize appearance:
+      --preloader-bg: Background color
+      --preloader-spinner-color: Main spinner color
+      --preloader-spinner-size: Size of the spinner
+      --preloader-spinner-border: Border width of spinner
+      --preloader-fade-duration: Fade out animation duration
+      --preloader-spin-duration: Spinner rotation speed
+-->
+
 <!DOCTYPE html>
 <html>
+    <!-- Main preloader container with centered spinner -->
     <div id="nabb-preloader" class="nabb-preloader">
         <div class="nabb-loader"></div>
     </div>
@@ -7,34 +29,48 @@
 </html>
 
 <style>
+    /* CSS Variables */
+    :root {
+        --preloader-bg: #000;
+        --preloader-spinner-color: #FFF;
+        --preloader-spinner-size: 48px;
+        --preloader-spinner-border: 5px;
+        --preloader-fade-duration: 0.5s;
+        --preloader-spin-duration: 1s;
+    }
+
+    /* Fixed fullscreen overlay */
     .nabb-preloader {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: #000;
+        background: var(--preloader-bg);
         display: flex;
         justify-content: center;
         align-items: center;
         z-index: 9999;
-        transition: opacity 0.5s ease-out;
+        transition: opacity var(--preloader-fade-duration) ease-out;
     }
 
+    /* Hidden state for fade-out effect */
     .nabb-preloader.hidden {
         opacity: 0;
         pointer-events: none;
     }
 
+    /* Spinning loader circle */
     .nabb-preloader .nabb-loader {
-        width: 48px;
-        height: 48px;
-        border: 5px solid #FFF;
+        width: var(--preloader-spinner-size);
+        height: var(--preloader-spinner-size);
+        border: var(--preloader-spinner-border) solid var(--preloader-spinner-color);
         border-bottom-color: transparent;
         border-radius: 50%;
-        animation: rotation 1s linear infinite;
+        animation: rotation var(--preloader-spin-duration) linear infinite;
     }
 
+    /* Rotation animation keyframes */
     @keyframes rotation {
         0% { transform: rotate(0deg) }
         100% { transform: rotate(360deg) }
@@ -42,20 +78,31 @@
 </style>
 
 <script>
-    
     /**
      * Handles the completion of loading and hides the preloader
+     * Adds 'hidden' class for fade-out effect and removes element after animation
      */
     function hidePreloader() {
         const preloader = document.getElementById('nabb-preloader');
         if (preloader) {
             preloader.classList.add('hidden');
+            // Get fade duration from CSS variable and convert to milliseconds
+            const fadeDuration = parseFloat(getComputedStyle(document.documentElement)
+                .getPropertyValue('--preloader-fade-duration')) * 1000;
             // Remove preloader from DOM after animation
-            setTimeout(() => preloader.remove(), 500);
+            setTimeout(() => preloader.remove(), fadeDuration);
         }
     }
 
+    // Hide preloader when page is fully loaded
     window.addEventListener('load', () => {
         hidePreloader();
     });
 </script>
+<!-- References -->
+<!--
+CSS Custom Properties: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties
+CSS Animations: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations
+CSS Transitions: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions
+Preloader Best Practices: https://web.dev/preload-critical-assets/
+-->
