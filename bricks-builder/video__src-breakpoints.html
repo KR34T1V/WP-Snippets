@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!-- 
+    This HTML document implements a responsive video background system that switches video sources
+    based on screen width breakpoints. The implementation uses data attributes to define different
+    video sources for different screen sizes.
+-->
+<html>
+    <!-- Section containing the video background with breakpoint-specific sources -->
+    <section id="brxe-cbzixv" class="brxe-section bustech_overlay--dark has-bg-video" data-video-src-568="https://bustech.co.za/wp-content/uploads/2024/10/BT_Home_Hero-mobile.mp4" data-video-src-1280="https://bustech.co.za/wp-content/uploads/2024/10/BT_Home_Hero-tablet.mp4" data-video-src-1920="https://bustech.co.za/wp-content/uploads/2024/10/BT_Home_Hero-desktop.mp4">
+        <!-- Video wrapper div that contains the actual video element -->
+        <div class="bricks-background-video-wrapper loaded" data-background-video-url="https://bustech.co.za/wp-content/uploads/2024/10/BT_Home_Hero-mobile.mp4" data-background-video-loop="1">
+            <video autoplay loop playsinline muted></video>
+        </div>
+    </section>
+</html>
+<script>
+    // Configuration constants
+    const VERBOSE = false; // Disable debugging in production
+    const videoWrappers = document.getElementsByClassName('has-bg-video');
+    const activeVideos = new Map(); // Stores video sources and breakpoints for each video
+    const resizeDebounceDelay = 250; // Delay in milliseconds for debouncing resize events
+
+    /**
+     * Initializes breakpoints for all video elements by reading data attributes
+     * and storing them in the activeVideos Map.
+     */
+    function setBreakpoints() {
+        Array.from(videoWrappers).forEach((wrapper, index) => {
+            // Extract video sources and breakpoints from data attributes
+            const videoSources = Object.entries(wrapper.dataset)
+                .filter(([key]) => key.startsWith('videoSrc'))
+                .map(([key, value]) => ({
+                    breakpoint: parseInt(key.split('-')[1]),
+                    src: value
+                }))
+                .sort((a, b) => a.breakpoint - b.breakpoint);
+
+            const video = wrapper.querySelector('video');
+            if (!video) return;
+            
+            // Assign unique ID and store sources
+            video.setAttribute('data-video-id', index);
+            activeVideos.set(index, new Map(videoSources.map(({breakpoint, src}) => [breakpoint, src])));
+        });
+    }
+
+    /**
+     * Determines the appropriate video source based on screen width and available breakpoints
+     * @param {Map} breakpoints - Map of breakpoint values to video sources
+     * @param {number} screenWidth - Current screen width
+     * @returns {Object} Object containing selected breakpoint and source
+     */
+    function findAppropriateSource(breakpoints, screenWidth) {
+        let appropriateSource = null;
+        let appropriateBreakpoint = null;
+
+        // Find the smallest breakpoint that's larger than screen width
+        for (const [breakpoint, source] of breakpoints) {
+            if (screenWidth <= breakpoint && (!appropriateBreakpoint || breakpoint < appropriateBreakpoint)) {
+                appropriateBreakpoint = breakpoint;
+                appropriateSource = source;
+            }
+        }
+
+        // If no appropriate breakpoint found, use the largest one
+        if (!appropriateSource) {
+            const lastEntry = Array.from(breakpoints.entries()).pop();
+            if (lastEntry) {
+                [appropriateBreakpoint, appropriateSource] = lastEntry;
+            }
+        }
+
+        return { breakpoint: appropriateBreakpoint, source: appropriateSource };
+    }
+
+    /**
+     * Updates video sources based on current screen width
+     * Handles video playback state during source switching
+     */
+    function switchVideoSource() {
+        const screenWidth = window.innerWidth;
+        document.querySelectorAll('[data-video-id]').forEach((video) => {
+            try {
+                const videoId = parseInt(video.getAttribute('data-video-id'));
+                const breakpoints = activeVideos.get(videoId);
+                if (!breakpoints) return;
+
+                const { breakpoint, source } = findAppropriateSource(breakpoints, screenWidth);
+                
+                // Skip if source hasn't changed
+                if (!source || video.src === source) return;
+
+                // Preserve playing state while switching sources
+                const wasPlaying = !video.paused;
+                video.src = source;
+                video.load();
+                video.setAttribute('data-active-breakpoint', breakpoint.toString());
+                
+                if (wasPlaying) {
+                    video.play().catch(e => console.error('Error playing video:', e));
+                }
+
+                VERBOSE && console.log(`Updated video ${videoId} to breakpoint ${breakpoint} with source ${source}`);
+            } catch (error) {
+                console.error('Error switching video source:', error);
+            }
+        });
+    }
+
+    /**
+     * Cleanup function to remove event listeners and clear stored data
+     */
+    function cleanup() {
+        activeVideos.clear();
+        window.removeEventListener('resize', debouncedResize);
+        window.removeEventListener('unload', cleanup);
+    }
+
+    // Debounced resize handler to prevent excessive updates
+    const debouncedResize = (() => {
+        let timeoutId;
+        return () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(switchVideoSource, resizeDebounceDelay);
+        };
+    })();
+
+    // Initialize the video system when the page loads
+    window.addEventListener('load', () => {
+        setBreakpoints();
+        switchVideoSource();
+        window.addEventListener('resize', debouncedResize);
+        window.addEventListener('unload', cleanup);
+    });
+</script>
