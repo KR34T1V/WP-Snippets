@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <!-- Main preloader container -->
+    <div id="nabb-preloader" class="nabb-preloader">
+        <!-- SVG logo/loader with compass-like design -->
+        <svg class="nabb-loader" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Path defines a circle (40px radius) with a diamond shape in the center -->
+            <path d="M50 10 A40 40 0 0 1 90 50 A40 40 0 0 1 50 90 A40 40 0 0 1 10 50 A40 40 0 0 1 50 10 M50 30 L70 50 L50 70 L30 50 Z" fill="none" stroke="#FFF" stroke-width="8"/>
+        </svg>
+    </div>
+    
+</html>
+
+<style>
+    /* Preloader container styles */
+    .nabb-preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+    }
+
+    /* Hidden state for fade-out effect */
+    .nabb-preloader.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* SVG loader size */
+    .nabb-preloader .nabb-loader {
+        width: 64px;
+        height: 64px;
+    }
+
+    /* SVG path animation setup */
+    .nabb-preloader .nabb-loader path {
+        stroke-dasharray: 400;  /* Total length of the path */
+        stroke-dashoffset: 400; /* Initial offset to hide the path */
+        animation: fill-svg 3s ease infinite;
+    }
+
+    /* Animation to draw the SVG path */
+    @keyframes fill-svg {
+        0% {
+            stroke-dashoffset: 400; /* Start with path hidden */
+            fill: none;
+        }
+        100% {
+            stroke-dashoffset: 0;   /* Reveal the entire path */
+            /* fill: #FFF; */       /* Commented out fill animation */
+        }
+    }
+</style>
+
+<script>
+    
+    /**
+     * Handles the completion of loading and hides the preloader
+     * Adds 'hidden' class for fade-out effect and removes element after animation
+     */
+    function hidePreloader() {
+        const preloader = document.getElementById('nabb-preloader');
+        if (preloader) {
+            preloader.classList.add('hidden');
+            // Remove preloader from DOM after animation
+            setTimeout(() => preloader.remove(), 500);
+        }
+    }
+
+    // Listen for window load event
+    window.addEventListener('load', () => {
+        hidePreloader();
+    });
+</script>
+
+<!-- References -->
+<!--
+SVG Path Commands: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d
+CSS Animations: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations
+stroke-dasharray/offset: https://css-tricks.com/svg-line-animation-works/
+Preloader Best Practices: https://web.dev/preload-critical-assets/
+-->
